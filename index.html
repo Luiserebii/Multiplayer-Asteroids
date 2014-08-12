@@ -225,9 +225,9 @@ Shot.prototype.paint = function(){
 
 Shot.prototype.nullShip = function(){
   
-  if(this.y >= 900){
-    Shot = null;
-    shotIs = false;
+  if(this.y <= -10){
+    shotIs = false;    
+    shots[shots.length - 1] = null;
   }
 }
 
@@ -287,7 +287,7 @@ function draw(){
     shotIs = true;
   }
   if(shotIs == true){
-    debugger
+
     shots[shots.length - 1].move();
     shots[shots.length - 1].paint();
     shots[shots.length - 1].nullShip();    //add shotIs false to nullShip
