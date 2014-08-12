@@ -225,9 +225,9 @@ Shot.prototype.paint = function(){
 
 Shot.prototype.nullShip = function(){
   
-  if(this.y >= 900){
-    shots[shots.length - 1] = null;
+  if(this.y <= -10){
     shotIs = false;
+    shots[shots.length - 1] = null;
   }
 }
 
