@@ -1,401 +1,157 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html>
-  <head>
-  <style>
-    body {
-      text-align: center;
-      background: purple;
-      background-position: center;
-      border: 20px;
-      border-color: white;
-    }
-    h1 {
-      color: white;
-    }
-    p {
-      color: white;
-      font-size: 20px;
-    }
-  </style>
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript"></script>
-    <script src="js/p5.js"></script>
-    <script src="https://cdn.firebase.com/js/client/1.0.19/firebase.js"></script>
 
-    <script>
+<head>
 
-// var x = 0;
-// var y = 0;
-var velx = 3;
-var vely = 3;
-var LEFT_ARROW= 65;
-var RIGHT_ARROW = 68;
-var UP_ARROW = 87;
-var DOWN_ARROW = 83;
-var leftPress =false;
-var rightPress = false;
-var upPress = false;
-var downPress =  false;
-var rotateCW = false;
-var rotateCCW = false;
-var spacePress = false;
-var controlPress1 = false;
-var controlPress2 = false;
-var controlPress3 = false;
-var controlPress4 = false;
-var cwPress  = false;
-var ccwPress=  false;
-var rotation = 0;
-var myDataRef2;
-var shipdata1Base;
-var shipdata2Base;
-var shipChoose;
-var Ship1;
-var Ship2;
-var Ship3;
-var Ship4;
-var Shot;
-var isControl = false;
-var databaseControl;
-var shipControl = 0;
-var shipDic;
-var shotIs = false;
-var shots = [];
-//float angle = 0;
-
-// var isChanged;
-
-myDataRef2 = new Firebase("https://luminous-fire-510.firebaseio.com/luiserebii");
-
-
-function setup () {
- // shipChoose = new Firebase("https://luminous-fire-510.firebaseio.com");
-  //shipChoose.set({ship1: false, ship2: false,ship3:false,ship4:false});
-  createCanvas(800, 600);
-  background(51);
-  img = loadImage("http://i.imgur.com/0sNYCgg.png");
-
-  Ship1 = new Ship(0, 0, 3, 3, "shipdata1", 0, 1);
-  Ship2 = new Ship(100,100, 6, 6, "shipdata2", 0, 2);
-
-
-  myDataRef2.set({
-    shipdata1: {
-      x: Ship1.x,
-      y: Ship1.y,
-      isControl: isControl
-    },
-    shipdata2: {
-      x: Ship2.x,
-      y: Ship2.y,
-      isControl: isControl
-    }
-  });
-
-}
-
-
-  //Creating Ship Class
-  var Ship = function(x, y, velx, vely, shipdata, rotation, shipNum) {
-    this.x = x;
-    this.y = y;
-    this.rotation = rotation;
-    this.velx = velx;
-    this.vely = vely;
-    this.shipdata = shipdata;
-    this.shipNum = shipNum;
-
-    this.database = new Firebase("https://luminous-fire-510.firebaseio.com/luis/" + shipdata);
-
-    var shipProperties = {
-      x: this.x,
-      y: this.y,
-      rotation: this.rotation,
-      isControl: false
-
-    };
-
-    this.database.set(
-      shipProperties
-    );
-
-  }
-  //Moving Ship Across The Screen
-  Ship.prototype.move = function() {
-      if(leftPress === true && this.x>=0) {
-        this.x+=-this.velx;
-      }
-      if (rightPress === true && this.x<=670) {
-        this.x+=this.velx;
-        console.log("Ship1: " + Ship1.x + "Ship2: " + Ship2.x + "this.x " + this.x);
-      }
-      if(upPress === true && this.y>=0) {
-        this.y-=this.vely;
-      }
-      if (downPress === true && this.y<=475){
-        this.y+=this.vely;
-      }
-      // if (spacePress === true) {
-      //   angle-= 0.3
-      // }
-      if(rotateCW === true){
-        this.rotation+=2;
-      }
-      if(rotateCCW === true){
-        this.rotation-=2;
-      }
-
-
-      myDataRef2.child(this.shipdata).set({
-        //shipdata1: {
-          x: this.x,
-          y: this.y,
-          //rotation: this.rotation,
-          isControl: true
-        //}
-      });
-
-  }
-  //Painting ship onto the canvas
-  Ship.prototype.paint = function() {
-      //The image size is (128,128)
-    translate(this.x + 64, this.y + 64);
-    rotate(this.rotation*TWO_PI/360);
-    translate(-128,-128);
-    // if(rotateCW == true || rotateCCW == true){
-    //   translate(this.x +64, this.y +64);
-    //   this.x = -this.x - 64;
-    //   this.y = -this.y - 64; 
-    //   console.log(this.shipdata + " " + this.rotation)
-    //   rotate(this.rotation*TWO_PI/360);
-    // }
-    //translate(this.x-64,this.y-64);
-    image(img, this.x, this.y);
+    <link rel="stylesheet.css" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine">
     
-      //console.log("Painting " + this.shipdata + "at " + this.x + " " + this.y);
-      // console.log("the rotation is"+this.rotation);
-  }
+<style>
+	p.outset {border-style: outset;}
 
-    /*
-    If the ship is false set ship true and creating that ship.
-    if (ship1 = false){
-      shipChoose.set({ship1: true});
-      ship1 = true;
-    }
-    */
+</style>
 
-Ship.prototype.checkControl = function(controlPress) {
-  var ship = this;
-  
-  myDataRef2.once('value', function(data){
-    var snapshot = data.val();
-    databaseControl = snapshot[ship.shipdata].isControl;
-  });
-
-  //console.log(databaseControl);
-  if(controlPress == true && databaseControl == false && shipControl == 0){
-
-    myDataRef2.child(this.shipdata).set({ 
-
-        x: this.x,
-        y: this.y,
-        // rotation:this.rotation,
-        isControl: true
-
-    });
-    shipControl = this.shipNum;    
-    console.log("STATEMENT REACHED!!! UPDATE SUCCESS");
-  }
-
-}
-
-var Shot = function(x, y, r, xSpd, ySpd){
-
-  this.x = x;
-  this.y = y;
-  this.r = r;
-  this.xSpd = xSpd;
-  this.ySpd = ySpd;
-
-}
-
-Shot.prototype.move = function(){
-  if(this.y < 1000){
-
-    this.y = this.y - this.ySpd;
-
-  }
-}
-
-Shot.prototype.paint = function(){
-  ellipse(this.x, this.y, this.r, this.r);
-}
-
-Shot.prototype.nullShip = function(){
-  
-  if(this.y <= -10){
-    shotIs = false;    
-    shots[shots.length - 1] = null;
-  }
-}
+	<title>LAMZ Space War</title>
+	<script src="https://cdn.firebase.com/js/client/1.0.19/firebase.js"></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
+    <script src='https://cdn.firebase.com/js/client/1.0.15/firebase.js'></script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <script src="p5.js"></script>
 
 
-//Checking if reading from the database(control).
+</head>
+
+<body>
+	
+
+		<div id= "banner">
+
+	<h3>LAMZ SPACE WAR I</h3>
+
+	</div> 
 
 
+	<div id="messageChat">
+	    
+	    <div id="chatLabel">
+	    	
+	    	<p>Chat</p>
 
-//
-function draw(){
-  //Calling functions to redraw
-  clear();
-  background(51);
+	    </div>
+	    
+	</div>
+	
+	<div id="gameLAMZ"> 
 
-  Ship1.paint();
-  //Ship2.paint();
-  
+	<script type="text/javascript" src="script.js" ></script>
 
-  if(shipControl == 1){
-    console.log("Moving ship 1");
-    Ship1.move();
+	</div>
+    <input type="text" id="nameInput" placeholder="Name">
+	<input type="text" id="messageInput" placeholder="      Message...">
+	<input type="button" id="clear" value="Clear Chat">
 
-    myDataRef2.child("shipdata2").on('value', function (snapshot){
-      var datasnap = snapshot.val();
-      Ship2.x = datasnap.x;
-      Ship2.y = datasnap.y;
-      // Ship2.rotation= datasnap.rotation;
-    });
-  }
-  if(shipControl == 2){
-    console.log("Moving ship 2");
+	<script>
+	
+	var myDataRef = new Firebase("https://luminous-fire-508.firebaseio.com/");
+	var myDataRef2 = new Firebase("https://luminous-fire-510.firebaseio.com/");
 
-    Ship2.move();
+	$("#messageInput").keypress(function (e) {
+		if (e.keyCode == 13){
+			var name = $("#nameInput").val();
+			var message = $("#messageInput").val();
+			if(message.trim() != ""){
+				myDataRef.push({
+					name: name,
+					text: message
+				});
+			}	
+			$("#messageInput").val("");
+		}
+		
+	});
+	myDataRef.on('child_added', function(snapshot) {
+		var message = snapshot.val();
+		displayChatMessage(message.name, message.text);
+	});
 
-    myDataRef2.child("shipdata1").on('value', function (snapshot){
-      var datasnap = snapshot.val();
-      Ship1.x = datasnap.x;
-      Ship1.y = datasnap.y;
-      // Ship1.rotation = datasnap.rotation;
-    });
-  }
+	function displayChatMessage(name, text) {
 
-  Ship1.checkControl(controlPress1); 
-  Ship2.checkControl(controlPress2);
-  // checkControl1();
-  // checkControl2();
+		text = LinkParser(text);
 
-  if(spacePress == true && shotIs == false){
+        $("#messageChat").append("<strong>" + name +  "</strong>" + ": " + text + "<br>");
+       	$("#messageChat")[0].scrollTop = $("#messageChat")[0].scrollHeight;
+	};
 
-    //debugger
-    // for(var i = 0; i < shots.length; i++){
+	$("#clear").click(function(){
 
+		myDataRef.remove();
+		$("#messageChat").empty();
+		$("#chatLabel").reload();
+		//location.reload();
 
-
-    // }
-
-    shots[shots.length] = new Shot(Ship1.x + 64, Ship1.y, 10, 5, 5);    
-
-    //debugger
-    shotIs = true;
-  }
-  if(shotIs == true){
-
-    shots[shots.length - 1].move();
-    shots[shots.length - 1].paint();
-    shots[shots.length - 1].nullShip();    //add shotIs false to nullShip
-  }
-}
+	});
 
 
+	// myDataRef2.push({
 
-//Key Presses 
-$(document).keydown(function (evt) {
-  //A Key
-  if(evt.keyCode === 65){
-    leftPress= true;
-  }
-  //W Key
-  else if(evt.keyCode ===87 ){
-    upPress = true;
-  }
-  //D Key
-  else if(evt.keyCode === 68){
-    rightPress = true;
-  }
-  //S Key
-  else if (evt.keyCode=== 83){
-    downPress = true;
-  }
-  //Spacebar
-  else if (evt.keyCode ===32){
-    spacePress = true;
-  }
-  //Num 1
-  else if (evt.keyCode === 49){
-    controlPress1 = true;
-  }
-  //Num 2
-  else if (evt.keyCode === 50){
-    controlPress2 = true;
-  }
-  //Num 3
-  else if (evt.keyCode === 51){
-    controlPress3 = true;
-  }
-  //Num 4
-  else if (evt.keyCode === 52){
-    controlPress4 = true;
-  }      
-  //Left Arrow
-  else if (evt.keyCode === 39){
-    rotateCCW = true;
-  }      
-  //Right Arrow
-  else if (evt.keyCode === 37){
-   rotateCW = true;
- }
+	// 	x: x,
+	// 	y: y
 
-});
+	// });
 
-$(document).keyup(function (evt) { 
-  
-  if(evt.keyCode === 65){
-    leftPress= false;
-  }
-  else if(evt.keyCode ===87 ){
-    upPress = false;
-  }
-  else if(evt.keyCode === 68){
-    rightPress = false;
-  }
-  else if (evt.keyCode=== 83){
-    downPress = false;
-  }
-  else if (evt.keyCode === 32){ 
-    spacePress = false;
-  }
-  else if (evt.keyCode === 49){
-    controlPress1 = false;
-  }
-  else if (evt.keyCode === 50){
-    controlPress2 = false;
-  }
-  else if (evt.keyCode === 51){
-    controlPress3 = false;
-  }
-  else if (evt.keyCode === 52){
-    controlPress4 = false;
-  }   
-  else if (evt.keyCode === 39){
-    rotateCCW = false;
-  }      
-  else if (evt.keyCode === 37){
-   rotateCW = false;
-  }
-  });
-    </script> 
-  </head>
-  <body>
-    <h1> My Project!</h1>
-    <p> Please Don't Do anything or i will kill your family</p>
-  </body>
+
+	function LinkParser(string){
+
+		var indexHTTP = string.indexOf("http://");
+		var indexHTTPS = string.indexOf("https://");
+
+		if(indexHTTP != -1){
+
+			if(string.charAt(indexHTTP + 7) != null){
+
+				var indexSpace = string.indexOf(" ", indexHTTP);
+				
+				if(indexSpace == -1) {
+
+					var strHTML = string.substring(indexHTTP, string.length);
+					indexSpace = string.length;
+				}
+				else {
+					var strHTML = string.substring(indexHTTP, indexSpace);
+				}
+
+				text = string.substring(0, indexHTTP) + '<a href = "' + strHTML + '">' + strHTML + "</a>" + string.substring(indexSpace, string.length + 1);
+
+				return text;
+			}
+
+		}
+
+		return string;
+
+	}; //NOTE: THIS CODE WILL NOT WORK IF SPACES ARE BEFORE LINK - REWORK TO INCLUDE THIS EXCEPTION
+
+	</script>
+
+	<div id = "description">
+		
+		<h2>L.A.M.Z. SPACE WAR I</h2>
+
+		<p>A game of great peril and asteroids. Play with your friends on multiplayer and it's your choice whether to attack or save them from the dangerous asteroids. Chat with your friends for help or just for the fun of it.
+		Controls:
+		[A] LEFT
+		[D] RIGHT
+		[W] UP
+		[S] DOWN
+		[SPACE] SHOOT
+		[LEFT ARROW] TURN COUNTER CLOCK-WISE
+		[RIGHT ARROW] TURN CLOCK-WISE
+		</p>
+
+
+	</div>
+
+
+</body>
+
 </html>
